@@ -43,7 +43,7 @@
         console.log(json);
         let path = json.path;
         let url =
-          `<a href="${window.location.protocol}//${window.location.host}/v/${path}">shorturl.eluni.co/v/${path}</a>`;
+          `<a href="${window.location.protocol}//${window.location.host}/v/${path}">${window.location.protocol}//${window.location.host}/v/${path}</a>`;
         result.innerHTML = url;
       }).catch(err => console.error(`Error: ${JSON.stringify(err)}`))
     };

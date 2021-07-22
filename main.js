@@ -31,7 +31,7 @@ function generateID() {
 const findOne = promisify(store.findOne.bind(store));
 const insert = promisify(store.insert.bind(store));
 
-async function saveRecord(url, id, retryCount = 0) {
+async function saveRecord(req, res, url, id, retryCount = 0) {
   try {
     let existing = await findOne({ url });
     if (existing) {
@@ -43,7 +43,7 @@ async function saveRecord(url, id, retryCount = 0) {
     }
   } catch (err) {
     if (err.errorType === 'uniqueViolated' && retryCount < Number(process.env.RETRY_COUNT || 100)) {
-      saveRecord(url, generateID(), ++retryCount);
+      saveRecord(req, res, url, generateID(), ++retryCount);
     } else {
       console.error(err);
       res.status(500).send(err);
@@ -58,7 +58,7 @@ app.post('/create', async (req, res) => {
     return;
   }
   let id = generateID();
-  await saveRecord(url, id);
+  await saveRecord(req, res, url, id);
 });
 
 app.get('/v/:id', async (req, res) => {
