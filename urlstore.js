@@ -4,7 +4,7 @@ const { promisify } = require('util');
 class URLStore {
   constructor() {
     this.urlStore = new nedb({
-      filename: 'database.txt',
+      filename: '/home/thomas/url-shortener/database.txt',
       autoload: true,
       timestampData: true,
     });

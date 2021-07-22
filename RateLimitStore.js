@@ -5,16 +5,33 @@ class RateLimitStore {
   constructor() {
     this.rateLimitStore = new nedb({
       store: null,
-      filename: 'rate-limit.txt',
+      filename: '/home/thomas/url-shortener/rate-limit.txt',
       autoload: true,
       timestampData: true,
     });
+
+    function keyGenerator(req) {
+      // default behavior for express-rate-limit
+      return req.ip;
+    }
+
+    let msg = { success: false, reason: 'Too many requests!' };
     this.rateLimiter = limiter({
-      message: { success: false, reason: 'Too many requests!' },
+      message: msg,
       max: 50, // up to 50 URLs shortened every 5 minutes
       windowMs: 1000 * 60 * 5, // 5 minutes in millis
-      store: this
+      store: this,
+      keyGenerator: keyGenerator,
+      handler: (req, res, next) => {
+        if (Date.now() >= req.rateLimit.resetTime.getTime()) {
+          this.resetKey(keyGenerator(req));
+          next();
+        } else {
+          res.status(429).send(msg);
+        }
+      }
     });
+    this.rateLimitStore.persistence.setAutocompactionInterval(30000);
   }
 
   incr(key, cb) {
@@ -42,7 +59,7 @@ class RateLimitStore {
               console.err(err);
               cb(err, -1, new Date());
             } else {
-              cb(err, doc.count, doc.expires);
+              cb(err, 1, d);
             }
           }
         );
@@ -60,9 +77,8 @@ class RateLimitStore {
   }
 
   resetKey(key) {
-    this.rateLimitStore.update({ key }, { $set: { count: 0 } }, { upsert: false }, (err, num, upsert) => {
+    this.rateLimitStore.remove({ key }, {}, (err, n) => {
       if (err) {
-        // guess I'll die?
         console.error(err);
       }
     });

@@ -73,9 +73,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'new.html'));
 });
 
-app.listen(Number(process.env.PORT || 8000), () => {
+app.listen(Number(process.env.PORT || 80), () => {
   console.log("Listening...");
   console.log("Trying to drop GID");
-  process.setgid(20);
+  console.log(`port listening is ${process.env.PORT}, ${Number(process.env.PORT || 8000)}`);
+//  process.setgid(20);
   console.log(`GID=${process.getgid()}`);
 });
