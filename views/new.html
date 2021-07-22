@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create a Short URL</title>
+</head>
+
+<body>
+  <h1>Tom's URL Shortener</h1>
+
+  <p>Create a short URL:</p>
+  <label for="url">Enter URL: </label>
+  <input type="text" name="url" id="url">
+  <input id="submit-btn" type="button" value="Shorten">
+  <p>
+    <div id="result"></div>
+  </p>
+  <script>
+    let button = document.querySelector('#submit-btn');
+    let field = document.querySelector('#url');
+    let result = document.querySelector('#result');
+
+    button.onclick = () => {
+      let bodyObj = {
+        url: field.value
+      };
+
+      let body = JSON.stringify(bodyObj);
+      fetch('/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': body.length
+        },
+        body: body
+      }).then(resp => {
+        console.log(resp);
+        return resp.json()
+      }).then(json => {
+        console.log(json);
+        let path = json.path;
+        let url = `<a href="http://shorturl.eluni.co/v/${path}">shorturl.eluni.co/v/${path}</a>`;
+        result.innerHTML = url;
+      }).catch(err => console.error(`Error: ${JSON.stringify(err)}`))
+    };
+  </script>
+</body>
+
+</html>

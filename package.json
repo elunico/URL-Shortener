@@ -1,0 +1,24 @@
+{
+  "name": "url-shortener",
+  "version": "0.1.0",
+  "description": "Shorten URLs for fun and profit?",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "nodemon main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "url",
+    "shortener"
+  ],
+  "author": "Thomas Povinelli",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nedb": "^1.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
