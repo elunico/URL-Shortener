@@ -31,7 +31,7 @@ function generateID() {
 const findOne = promisify(store.findOne.bind(store));
 const insert = promisify(store.insert.bind(store));
 
-function saveRecord(url, id, retryCount = 0) {
+async function saveRecord(url, id, retryCount = 0) {
   try {
     let existing = await findOne({ url });
     if (existing) {
@@ -58,7 +58,7 @@ app.post('/create', async (req, res) => {
     return;
   }
   let id = generateID();
-  saveRecord(url, id);
+  await saveRecord(url, id);
 });
 
 app.get('/v/:id', async (req, res) => {
