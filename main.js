@@ -82,4 +82,4 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'new.html'));
 });
 
-app.listen(Numebr(process.env.PORT) || 8000, () => console.log("Listening..."));
+app.listen(Number(process.env.PORT) || 8000, () => console.log("Listening..."));
