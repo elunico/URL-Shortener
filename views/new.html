@@ -6,6 +6,52 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create a Short URL</title>
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+
+  <style>
+    :root {
+      --left-start: 25%;
+      --body-width: 50%;
+    }
+
+    @media (max-width: 550px) {
+      body {
+        --left-start: 75px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      body {
+        --body-width: 100%;
+        --left-start: 1%;
+        margin-right: 1%;
+      }
+    }
+
+    body {
+      font-family: "Helvetica Neue", "Helvetica", "Arial", "Roboto" !important;
+      width: var(--body-width);
+      min-width: 300px;
+      margin-left: var(--left-start);
+    }
+
+    h1 {
+      font-weight: 500;
+    }
+
+    p {
+      font-size: 1.15em;
+    }
+
+    label {
+      font-size: 1.1em;
+    }
+  </style>
 </head>
 
 <body>
