@@ -11,7 +11,18 @@ const store = new nedb({
 });
 
 store.ensureIndex({ fieldName: 'path', unique: true }, (err) => {
+  if (err) {
+    console.error("Could not create index for path. Fatal Error.");
+    console.error(err);
+    process.exit(1);
+  }
+});
 
+store.ensureIndex({ fieldName: 'url', unique: false }, (err) => {
+  if (err) {
+    console.warn("Could not create index for url field!");
+    console.warn(err);
+  }
 });
 
 const app = express();
