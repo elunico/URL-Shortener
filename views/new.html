@@ -52,6 +52,18 @@
     label {
       font-size: 1.1em;
     }
+
+    #error-div {
+      color: red;
+      font-weight: bold;
+      font-size: 1.1em;
+      transition: transform 200ms linear;
+      transform:scale(0);
+    }
+
+    #result {
+      font-family: Menlo, Monaco, Consolas, monospace;
+    }
   </style>
 </head>
 
@@ -61,6 +73,7 @@
   <p>Create a short URL:</p>
   <label for="url">Enter URL: </label>
   <input type="text" name="url" id="url">
+  <div class="error-div" id="error-div">The URL you entered is invalid.</div>
   <input id="submit-btn" type="button" value="Shorten">
   <p>
     <div id="result"></div>
@@ -68,7 +81,23 @@
   <script>
     let button = document.querySelector('#submit-btn');
     let field = document.querySelector('#url');
+    let errorDiv = document.querySelector('#error-div');
     let result = document.querySelector('#result');
+
+    field.oninput = () => {
+      let url;
+      try {
+        url = new URL(field.value);
+        if (url.protocol.indexOf('http') != 0) {
+          throw 'Invalid protocl'
+        }
+        errorDiv.style.transform = 'scale(0)';
+        button.removeAttribute('disabled');
+      } catch(err) {
+        errorDiv.style.transform = 'scale(1)';
+        button.setAttribute('disabled', true);
+      }
+    }
 
     button.onclick = () => {
       let bodyObj = {
@@ -87,12 +116,16 @@
         console.log(resp);
         return resp.json()
       }).then(json => {
+        if (!json.success) {
+          result.textContent = `Error creating short url: ${json.reason}`;
+          return;
+        }
         console.log(json);
         let path = json.path;
         let url =
           `<a href="${window.location.protocol}//${window.location.host}/v/${path}">${window.location.protocol}//${window.location.host}/v/${path}</a>`;
         result.innerHTML = url;
-      }).catch(err => console.error(`Error: ${JSON.stringify(err)}`))
+      }).catch(err => result.textContent = `Error creating short url: ${JSON.stringify(err)}`)
     };
   </script>
 </body>

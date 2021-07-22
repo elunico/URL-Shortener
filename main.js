@@ -4,12 +4,13 @@ const URLStore = require('./urlstore');
 const RateLimitStore = require('./RateLimitStore');
 require('dotenv').config();
 
-const rateLimitStore = new RateLimitStore();
+const createLimitStore = new RateLimitStore(1000 * 60 * 60, 50, 'create-limit.txt');
+const redirectLimitStore = new RateLimitStore(1000 * 60, 1000, 'redirect-limit.txt');
 const urlStore = new URLStore();
 const app = express();
 
 app.use(express.json());
-app.use(rateLimitStore.rateLimiter);
+
 
 const candidateString = 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789-_';
 
@@ -20,6 +21,18 @@ function generateID() {
     id += candidateString.charAt(index);
   }
   return id;
+}
+
+function invalid(url) {
+  try {
+    let u = new URL(url);
+    if (u.protocol.indexOf('http') !== 0) {
+      throw 'Invalid protocol';
+    }
+    return false;
+  } catch (err) {
+    return true;
+  }
 }
 
 async function saveRecord(req, res, url, id, retryCount = 0) {
@@ -42,17 +55,20 @@ async function saveRecord(req, res, url, id, retryCount = 0) {
   }
 }
 
-app.post('/create', async (req, res) => {
+app.post('/create', createLimitStore.rateLimiter, async (req, res) => {
   let { url } = req.body;
   if (!url) {
-    res.status(400).sendFile(path.join(__dirname, 'views', '400.html'));
+    res.status(400).send({ success: false, reason: "Missing URL" });
     return;
+  }
+  if (invalid(url)) {
+    res.status(400).send({ success: false, reason: 'invalid or malformed URL' });
   }
   let id = generateID();
   await saveRecord(req, res, url, id);
 });
 
-app.get('/v/:id', async (req, res) => {
+app.get('/v/:id', redirectLimitStore.rateLimiter, async (req, res) => {
   try {
     if (!req.params.id) {
       res.status(400).sendFile(path.join(__dirname, 'views', '400.html'));
@@ -69,7 +85,7 @@ app.get('/v/:id', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
+app.get('/', redirectLimitStore.rateLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'new.html'));
 });
 
@@ -77,6 +93,6 @@ app.listen(Number(process.env.PORT || 80), () => {
   console.log("Listening...");
   console.log("Trying to drop GID");
   console.log(`port listening is ${process.env.PORT}, ${Number(process.env.PORT || 8000)}`);
-//  process.setgid(20);
+  //  process.setgid(20);
   console.log(`GID=${process.getgid()}`);
 });

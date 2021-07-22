@@ -2,10 +2,10 @@ const nedb = require('nedb');
 const limiter = require('express-rate-limit');
 
 class RateLimitStore {
-  constructor() {
+  constructor(windowMS, max, filename) {
     this.rateLimitStore = new nedb({
       store: null,
-      filename: '/home/thomas/url-shortener/rate-limit.txt',
+      filename: `/home/thomas/url-shortener/${filename}`,
       autoload: true,
       timestampData: true,
     });
