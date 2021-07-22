@@ -42,7 +42,8 @@
       }).then(json => {
         console.log(json);
         let path = json.path;
-        let url = `<a href="http://shorturl.eluni.co/v/${path}">shorturl.eluni.co/v/${path}</a>`;
+        let url =
+          `<a href="${window.location.protocol}//${window.location.host}/v/${path}">shorturl.eluni.co/v/${path}</a>`;
         result.innerHTML = url;
       }).catch(err => console.error(`Error: ${JSON.stringify(err)}`))
     };

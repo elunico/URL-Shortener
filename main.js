@@ -2,11 +2,16 @@ const express = require('express');
 const path = require('path');
 const nedb = require('nedb');
 const { promisify } = require('util');
+require('dotenv').config();
 
 const store = new nedb({
   filename: 'database.txt',
   autoload: true,
   timestampData: true,
+});
+
+store.ensureIndex({ fieldName: 'path', unique: true }, (err) => {
+
 });
 
 const app = express();
@@ -26,6 +31,26 @@ function generateID() {
 const findOne = promisify(store.findOne.bind(store));
 const insert = promisify(store.insert.bind(store));
 
+function saveRecord(url, id, retryCount = 0) {
+  try {
+    let existing = await findOne({ url });
+    if (existing) {
+      console.log(existing);
+      res.send({ path: existing.path });
+    } else {
+      await insert({ url, path: id });
+      res.send({ path: id });
+    }
+  } catch (err) {
+    if (err.errorType === 'uniqueViolated' && retryCount < Number(process.env.RETRY_COUNT || 100)) {
+      saveRecord(url, generateID(), ++retryCount);
+    } else {
+      console.error(err);
+      res.status(500).send(err);
+    }
+  }
+}
+
 app.post('/create', async (req, res) => {
   let { url } = req.body;
   if (!url) {
@@ -33,22 +58,7 @@ app.post('/create', async (req, res) => {
     return;
   }
   let id = generateID();
-  try {
-    console.log("Before");
-    let existing = await findOne({ url });
-    if (existing) {
-      console.log(existing);
-      res.send({ path: existing.path });
-    } else {
-      console.log("Before insert");
-      await insert({ url, path: id });
-      console.log('after insert');
-      res.send({ path: id });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(err);
-  }
+  saveRecord(url, id);
 });
 
 app.get('/v/:id', async (req, res) => {
@@ -72,4 +82,4 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'new.html'));
 });
 
-app.listen(8000, () => console.log("Listening..."));
+app.listen(Numebr(process.env.PORT) || 8000, () => console.log("Listening..."));

@@ -15,6 +15,7 @@
   "author": "Thomas Povinelli",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "nedb": "^1.8.0"
   },
