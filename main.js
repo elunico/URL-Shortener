@@ -63,6 +63,7 @@ app.post('/create', createLimitStore.rateLimiter, async (req, res) => {
   }
   if (invalid(url)) {
     res.status(400).send({ success: false, reason: 'invalid or malformed URL' });
+    return;
   }
   let id = generateID();
   await saveRecord(req, res, url, id);
