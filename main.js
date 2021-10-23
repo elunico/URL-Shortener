@@ -55,6 +55,10 @@ async function saveRecord(req, res, url, id, retryCount = 0) {
   }
 }
 
+app.get('/coffee', redirectLimitStore.rateLimiter, async (req, res) => {
+	res.status(418).sendFile(path.join(__dirname, 'views', 'teapot.html'));
+});
+
 app.post('/create', createLimitStore.rateLimiter, async (req, res) => {
   let { url } = req.body;
   if (!url) {

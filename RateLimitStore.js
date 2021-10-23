@@ -3,6 +3,8 @@ const limiter = require('express-rate-limit');
 
 class RateLimitStore {
   constructor(windowMS, max, filename) {
+    this.windowMS = windowMS;
+    this.max = max;
     this.rateLimitStore = new nedb({
       store: null,
       filename: `/home/thomas/url-shortener/${filename}`,
@@ -18,8 +20,8 @@ class RateLimitStore {
     let msg = { success: false, reason: 'Too many requests!' };
     this.rateLimiter = limiter({
       message: msg,
-      max: 50, // up to 50 URLs shortened every 5 minutes
-      windowMs: 1000 * 60 * 5, // 5 minutes in millis
+      max: this.max,
+      windowMs: this.windowMS,
       store: this,
       keyGenerator: keyGenerator,
       handler: (req, res, next) => {
