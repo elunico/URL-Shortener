@@ -87,7 +87,14 @@
     field.oninput = () => {
       let url;
       try {
-        url = new URL(field.value);
+	let v = field.value
+	if (v.indexOf('https://') != 0 && v.indexOf('http://') != 0) {
+		v = 'https://' + field.value
+	}
+	if (v.indexOf('.') < 0 || v.indexOf('.') == (v.length - 1)) {
+		throw 'Missing domain'
+	}
+        url = new URL(v);
         if (url.protocol.indexOf('http') != 0) {
           throw 'Invalid protocl'
         }
@@ -100,8 +107,13 @@
     }
 
     button.onclick = () => {
+     
+	let v = field.value
+        if (v.indexOf('https://') != 0 && v.indexOf('http://') != 0) {
+                v = 'https://' + field.value
+        }
       let bodyObj = {
-        url: field.value
+        url: v
       };
 
       let body = JSON.stringify(bodyObj);
