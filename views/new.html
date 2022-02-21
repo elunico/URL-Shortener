@@ -58,11 +58,21 @@
       font-weight: bold;
       font-size: 1.1em;
       transition: transform 200ms linear;
-      transform:scale(0);
+      transform: scale(0);
     }
 
     #result {
       font-family: Menlo, Monaco, Consolas, monospace;
+    }
+
+    .footer {
+      margin-top: 20vh;
+      color: rgb(90, 90, 90);
+      font-size: 0.95rem;
+    }
+
+    .compact {
+      margin-top: 2vh;
     }
   </style>
 </head>
@@ -76,7 +86,18 @@
   <div class="error-div" id="error-div">The URL you entered is invalid.</div>
   <input id="submit-btn" type="button" value="Shorten">
   <p>
-    <div id="result"></div>
+  <div id="result"></div>
+  </p>
+
+  <p class="footer">
+    URLs that come from <code>eluni.co</code> take the form of <code>eluni.co/v/XXXXXX</code> where the Xs represent
+    the unique ID of that shortened URL. You can visit <code>eluni.co/<b>q</b>/XXXXXX</code> to see where the URL will
+    lead without actually visiting it (notice the change from v to q)
+  </p>
+  <p class="footer compact">
+    You can also paste the URL right here to check
+    <input type="text" id="check-url">
+    <button id="check-button">Check Destination</button>
   </p>
   <script>
     let button = document.querySelector('#submit-btn');
@@ -84,34 +105,53 @@
     let errorDiv = document.querySelector('#error-div');
     let result = document.querySelector('#result');
 
+    const checkInput = document.querySelector('#check-url');
+    const checkButton = document.querySelector('#check-button');
+
+    checkButton.onclick = function (event) {
+      let url = new URL(checkInput.value);
+      console.log(url.pathname);
+      if (url.hostname != 'eluni.co') {
+        alert("Not an eluni.co URL");
+        return;
+      }
+      else if (url.pathname.includes('/v/')) {
+        let newDest = url.toString().replace(/\/v\//, '/q/');
+        window.location = newDest;
+      } else {
+        alert("Not an eluni.co Short URL");
+      }
+
+    };
+
     field.oninput = () => {
       let url;
       try {
-	let v = field.value
-	if (v.indexOf('https://') != 0 && v.indexOf('http://') != 0) {
-		v = 'https://' + field.value
-	}
-	if (v.indexOf('.') < 0 || v.indexOf('.') == (v.length - 1)) {
-		throw 'Missing domain'
-	}
+        let v = field.value;
+        if (v.indexOf('https://') != 0 && v.indexOf('http://') != 0) {
+          v = 'https://' + field.value;
+        }
+        if (v.indexOf('.') < 0 || v.indexOf('.') == (v.length - 1)) {
+          throw 'Missing domain';
+        }
         url = new URL(v);
         if (url.protocol.indexOf('http') != 0) {
-          throw 'Invalid protocl'
+          throw 'Invalid protocl';
         }
         errorDiv.style.transform = 'scale(0)';
         button.removeAttribute('disabled');
-      } catch(err) {
+      } catch (err) {
         errorDiv.style.transform = 'scale(1)';
         button.setAttribute('disabled', true);
       }
-    }
+    };
 
     button.onclick = () => {
-     
-	let v = field.value
-        if (v.indexOf('https://') != 0 && v.indexOf('http://') != 0) {
-                v = 'https://' + field.value
-        }
+
+      let v = field.value;
+      if (v.indexOf('https://') != 0 && v.indexOf('http://') != 0) {
+        v = 'https://' + field.value;
+      }
       let bodyObj = {
         url: v
       };
@@ -126,7 +166,7 @@
         body: body
       }).then(resp => {
         console.log(resp);
-        return resp.json()
+        return resp.json();
       }).then(json => {
         if (!json.success) {
           result.textContent = `Error creating short url: ${json.reason}`;
@@ -137,7 +177,7 @@
         let url =
           `<a href="${window.location.protocol}//${window.location.host}/v/${path}">${window.location.protocol}//${window.location.host}/v/${path}</a>`;
         result.innerHTML = url;
-      }).catch(err => result.textContent = `Error creating short url: ${JSON.stringify(err)}`)
+      }).catch(err => result.textContent = `Error creating short url: ${JSON.stringify(err)}`);
     };
   </script>
 </body>

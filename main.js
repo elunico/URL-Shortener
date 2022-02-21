@@ -9,6 +9,9 @@ const redirectLimitStore = new RateLimitStore(1000 * 60, 1000, 'redirect-limit.t
 const urlStore = new URLStore();
 const app = express();
 
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, '/views'));
+app.use(express.static(path.join(__dirname, '/static')));
 app.use(express.json());
 
 
@@ -56,7 +59,7 @@ async function saveRecord(req, res, url, id, retryCount = 0) {
 }
 
 app.get('/coffee', redirectLimitStore.rateLimiter, async (req, res) => {
-	res.status(418).sendFile(path.join(__dirname, 'views', 'teapot.html'));
+  res.status(418).sendFile(path.join(__dirname, 'views', 'teapot.html'));
 });
 
 app.post('/create', createLimitStore.rateLimiter, async (req, res) => {
@@ -71,6 +74,23 @@ app.post('/create', createLimitStore.rateLimiter, async (req, res) => {
   }
   let id = generateID();
   await saveRecord(req, res, url, id);
+});
+
+app.get('/q/:id', redirectLimitStore.rateLimiter, async (req, res) => {
+  try {
+    if (!req.params.id) {
+      res.status(400).sendFile(path.join(__dirname, 'views', '400.html'));
+      return;
+    }
+    record = await urlStore.findOne({ path: req.params.id });
+    if (record) {
+      res.render('check.pug', { url: record.url, path: record.path, created: record.createdAt });
+    } else {
+      res.sendFile(path.join(__dirname, 'views', '404.html'));
+    }
+  } catch (err) {
+    res.status(500).sendFile(path.join(__dirname, 'views', '500.html'));
+  }
 });
 
 app.get('/v/:id', redirectLimitStore.rateLimiter, async (req, res) => {
@@ -97,7 +117,7 @@ app.get('/', redirectLimitStore.rateLimiter, (req, res) => {
 app.listen(Number(process.env.PORT || 80), () => {
   console.log("Listening...");
   console.log("Trying to drop GID");
-  console.log(`port listening is ${process.env.PORT}, ${Number(process.env.PORT || 8000)}`);
+  console.log(`port listening is ${process.env.PORT}, ${Number(process.env.PORT || 80)}`);
   //  process.setgid(20);
   console.log(`GID=${process.getgid()}`);
 });

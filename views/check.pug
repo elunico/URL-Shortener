@@ -1,0 +1,39 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Elunico URL Check
+    link(rel="stylesheet", href="/check.css")
+
+  body
+    h1 URL Check on elunico
+
+    div(class="content")
+      p(class="col1") path:
+      div(class="col2")
+        code= path
+
+      p(class="col1") destination:
+      div(class="col2")
+        a(href="#{url}")= url
+
+      p(class="col1") destination hostname:
+      div(class="col2")
+        a(href="#{url}")= new URL(url).host
+
+      p(class="col1") created:
+      div(class="col2")= created.toLocaleString()
+
+    p(class="col-all warning", id='warning') Warning: the destination URL contains characters that may look similar to familiar letters but may not actually be the letters you expect. Proceed with caution
+
+
+    script.
+      let url = "#{url}"
+      for (let i = 0; i < url.length; i++) {
+        if (url.codePointAt(i) > 255) {
+          document.querySelector('#warning').style.display = 'block';
+        }
+      }
+

@@ -1,0 +1,72 @@
+body {
+  display: flex;
+
+  width: 100%;
+  height: auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  font-family: sans-serif;
+  font-size: 1.05rem;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  padding: 1rem;
+  column-gap: 1rem;
+}
+
+.col1 {
+  grid-column: 1;
+  padding: 0.25em;
+  align-self: center;
+  font-weight: bold;
+}
+
+.col2 {
+  grid-column: 2;
+  padding: 0.25em;
+  align-self: center;
+}
+
+.col-all {
+  grid-column: 1;
+  column-span: 2;
+}
+
+.warning {
+  font-weight: bold;
+  color: darkred;
+}
+
+#warning {
+  display: none;
+  max-width: 50%;
+  width: 40rem;
+  min-width: min-content;
+  font-size: 1.1em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #warning {
+    animation-name: pulse;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.9);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(0.9);
+  }
+}
