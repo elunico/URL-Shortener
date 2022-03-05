@@ -90,8 +90,10 @@
   </p>
 
   <p class="footer">
-    URLs that come from <code>eluni.co</code> take the form of <code>eluni.co/v/XXXXXX</code> where the Xs represent
-    the unique ID of that shortened URL. You can visit <code>eluni.co/<b>q</b>/XXXXXX</code> to see where the URL will
+    URLs that come from <code>url.eluni.co</code> take the form of <code>url.eluni.co/v/XXXXXX</code> where the Xs
+    represent
+    the unique ID of that shortened URL. You can visit <code>url.eluni.co/<b>q</b>/XXXXXX</code> to see where the URL
+    will
     lead without actually visiting it (notice the change from v to q)
   </p>
   <p class="footer compact">
@@ -111,7 +113,7 @@
     checkButton.onclick = function (event) {
       let url = new URL(checkInput.value);
       console.log(url.pathname);
-      if (url.hostname != 'eluni.co') {
+      if (url.hostname != 'url.eluni.co') {
         alert("Not an eluni.co URL");
         return;
       }
