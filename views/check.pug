@@ -3,8 +3,8 @@ html(lang="en")
   head
     meta(charset="UTF-8")
     meta(http-equiv="X-UA-Compatible", content="IE=edge")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title Elunico URL Check
+    link(rel="stylesheet", href="/common.css")
     link(rel="stylesheet", href="/check.css")
 
   body
@@ -28,6 +28,8 @@ html(lang="en")
 
     p(class="col-all warning", id='warning') Warning: the destination URL contains characters that may look similar to familiar letters but may not actually be the letters you expect. Proceed with caution
 
+    p(class="col-all")
+      a(class="home-link" href="/") Home
 
     script.
       let url = "#{url}"
