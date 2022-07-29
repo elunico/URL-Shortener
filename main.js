@@ -2,12 +2,15 @@ const express = require('express');
 const path = require('path');
 const URLStore = require('./urlstore');
 const RateLimitStore = require('./RateLimitStore');
+const child = require('child_process');
+const fs = require('fs');
 require('dotenv').config();
 
 const createLimitStore = new RateLimitStore(1000 * 60 * 60, 50, 'create-limit.txt');
 const redirectLimitStore = new RateLimitStore(1000 * 60, 1000, 'redirect-limit.txt');
 const urlStore = new URLStore();
 const app = express();
+const uuid = require('uuid').v4;
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, '/views'));
@@ -16,6 +19,8 @@ app.use(express.json());
 
 
 const candidateString = 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789-_';
+
+let canGetNo = 5;
 
 function generateID() {
   let id = '';
@@ -108,6 +113,51 @@ app.get('/v/:id', redirectLimitStore.rateLimiter, async (req, res) => {
   } catch (err) {
     res.status(500).sendFile(path.join(__dirname, 'views', '500.html'));
   }
+});
+
+app.get('/no/:item', (req, res) => {
+  if (canGetNo <= 0) {
+    res.header('Retry-After', '1000').status(503).send("Service temporarily unavailable");
+    return;
+  }
+  canGetNo--;
+
+  const item = req.params.item;
+
+  if (item.length > 400) {
+    canGetNo++;
+    res.status(400).send("Bad Request. Text too long");
+    return;
+  }
+
+  const identifier = uuid();
+  let job = child.spawn(`python3`, [__dirname + `/make-no.py`, identifier, item]);
+
+  // failsafe timeout after 2 seconds
+  let killSafe = setTimeout(function () {
+    job.kill('SIGINT');
+  }, 2000);
+
+  job.stdout.on('data', d => console.log(d.toString()));
+  job.stderr.on('data', d => console.log(d.toString()));
+
+  job.on('error', err => {
+    res.status(500).send(err);
+  });
+
+  job.on('exit', () => {
+    clearTimeout(killSafe);
+    res.status(200).header('Content-Type', 'image/png').sendFile(__dirname + `/output/${identifier}.png`, err => {
+      canGetNo++;
+      setTimeout(() => {
+        fs.unlink(__dirname + `/output/${identifier}.png`, err => {
+          console.error(err);
+        });
+      }, 2000);
+    });
+
+
+  });
 });
 
 app.get('/', redirectLimitStore.rateLimiter, (req, res) => {
