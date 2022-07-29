@@ -3,9 +3,9 @@ from PIL import ImageDraw
 from PIL import ImageFont
 import sys
 
-FONT_FILE_NAME = 'RobCon.ttf'
+FONT_FILE_NAME = 'FreeSansBold.ttf'
 FONT_SIZE_SHRINK_FACTOR = 0.875
-FONT_SIZE_MINIMUM = 64
+FONT_SIZE_MINIMUM = 72
 
 def format_message(ctx, image_width, image_height, message):
     # set initial font size

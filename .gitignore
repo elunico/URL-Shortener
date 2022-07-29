@@ -7,3 +7,5 @@ package-lock.json
 rate-limit.txt
 redirect-limit.txt
 create-limit.txt
+output/
+output.png
