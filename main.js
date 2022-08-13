@@ -20,8 +20,6 @@ app.use(express.json());
 
 const candidateString = 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789-_';
 
-let canGetNo = 5;
-
 function generateID() {
   let id = '';
   for (let i = 0; i < 6; i++) {
@@ -115,49 +113,8 @@ app.get('/v/:id', redirectLimitStore.rateLimiter, async (req, res) => {
   }
 });
 
-app.get('/no/:item', (req, res) => {
-  if (canGetNo <= 0) {
-    res.header('Retry-After', '1000').status(503).send("Service temporarily unavailable");
-    return;
-  }
-  canGetNo--;
-
-  const item = req.params.item;
-
-  if (item.length > 400) {
-    canGetNo++;
-    res.status(400).send("Bad Request. Text too long");
-    return;
-  }
-
-  const identifier = uuid();
-  let job = child.spawn(`python3`, [__dirname + `/make-no.py`, identifier, item]);
-
-  // failsafe timeout after 2 seconds
-  let killSafe = setTimeout(function () {
-    job.kill('SIGINT');
-  }, 2000);
-
-  job.stdout.on('data', d => console.log(d.toString()));
-  job.stderr.on('data', d => console.log(d.toString()));
-
-  job.on('error', err => {
-    res.status(500).send(err);
-  });
-
-  job.on('exit', () => {
-    clearTimeout(killSafe);
-    res.status(200).header('Content-Type', 'image/png').sendFile(__dirname + `/output/${identifier}.png`, err => {
-      canGetNo++;
-      setTimeout(() => {
-        fs.unlink(__dirname + `/output/${identifier}.png`, err => {
-          console.error(err);
-        });
-      }, 2000);
-    });
-
-
-  });
+app.get('/no/:request', (req, res) => {
+	res.redirect(`https://app.eluni.co/no/${req.params.request}`);
 });
 
 app.get('/', redirectLimitStore.rateLimiter, (req, res) => {
