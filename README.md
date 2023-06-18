@@ -1,5 +1,5 @@
 # URL-Shortener
-A simple URL shortener in using Node, Express, and Nedb
+A simple URL shortener in using Node, Express, and sqlite3
 
 ## Shorten URLs
 

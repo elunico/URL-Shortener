@@ -20,6 +20,7 @@
     "express-rate-limit": "^5.3.0",
     "nedb": "^1.8.0",
     "pug": "^3.0.2",
+    "sqlite3": "^5.1.6",
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {

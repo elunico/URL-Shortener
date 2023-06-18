@@ -9,3 +9,4 @@ redirect-limit.txt
 create-limit.txt
 output/
 output.png
+*.sqlite3

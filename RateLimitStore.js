@@ -1,15 +1,15 @@
-const nedb = require('nedb');
 const limiter = require('express-rate-limit');
+const sql = require('sqlite3');
 
 class RateLimitStore {
-  constructor(windowMS, max, filename) {
+  constructor(windowMS, max) {
     this.windowMS = windowMS;
     this.max = max;
-    this.rateLimitStore = new nedb({
-      store: null,
-      filename: `/home/thomas/url-shortener/${filename}`,
-      autoload: true,
-      timestampData: true,
+
+    this.rateLimitStore = new sql.Database(`/home/thomas/url-shortener/url-database.sqlite3`, err => {
+      if (err) {
+        console.error(`Failed to open rate limit database ${err}`);
+      }
     });
 
     function keyGenerator(req) {
@@ -33,56 +33,45 @@ class RateLimitStore {
         }
       }
     });
-    this.rateLimitStore.persistence.setAutocompactionInterval(30000);
   }
 
   incr(key, cb) {
-    this.rateLimitStore.findOne({ key }, (err, doc) => {
+    this.rateLimitStore.get('SELECT * from agent where id=?', [key], (err, row) => {
       if (err) {
         console.error(`Error incrementing ${key}`);
-        console.err(err);
+        console.error(err);
         cb(err, -1, new Date());
-      } else if (doc) {
-        this.rateLimitStore.update(
-          { key },
-          { $inc: { count: 1 } },
-          { upsert: true },
-          (err, num, upsert) => {
-            cb(err, doc.count, doc.expires);
-          }
-        );
+      } else if (row) {
+        this.rateLimitStore.run(`UPDATE agent
+        SET count=?
+        WHERE
+            id=?`, [row.count + 1, key], err => {
+          console.error(err);
+          cb(err, row.count, row.expires);
+        });
       } else {
         let d = new Date(Date.now() + 1000 * 60 * 5);
-        this.rateLimitStore.insert(
-          { key, count: 1, expires: d },
-          (err, doc) => {
-            if (err) {
-              console.error(`Error incrementing ${key}`);
-              console.err(err);
-              cb(err, -1, new Date());
-            } else {
-              cb(err, 1, d);
-            }
-          }
-        );
+        this.rateLimitStore.run(`INSERT INTO agent (id, count, expires) VALUES (?, ?, ?)`, [key, 1, d], (err) => {
+          console.error(err);
+          cb(err, 1, d);
+
+        });
       }
     });
   }
 
   decr(key) {
-    this.rateLimitStore.update({ key }, { $dec: { count: 0 } }, { upsert: false }, (err, num, upsert) => {
-      if (err) {
-        // guess I'll die?
-        console.error(err);
-      }
+    this.rateLimitStore.run(`UPDATE table
+        SET count=?
+        WHERE
+            key=?`, [row.count - 1, key], err => {
+      console.error(err);
     });
   }
 
   resetKey(key) {
-    this.rateLimitStore.remove({ key }, {}, (err, n) => {
-      if (err) {
-        console.error(err);
-      }
+    this.rateLimitStore.run(`DELETE FROM agent WHERE id=?`, [key], err => {
+      console.error(err);
     });
   }
 }

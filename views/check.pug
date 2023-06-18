@@ -25,7 +25,7 @@ html(lang="en")
         a(href="#{url}")= new URL(url).host
 
       p(class="col1") created:
-      div(class="col2")= created.toLocaleString()
+      div(class="col2")= new Date(created).toLocaleString([], {timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone})
 
     p(class="col-all warning", id='warning') Warning: the destination URL contains characters that may look similar to familiar letters but may not actually be the letters you expect. Proceed with caution
 
