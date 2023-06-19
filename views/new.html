@@ -15,11 +15,27 @@
   </script>
   <link rel="stylesheet" href="/common.css">
   <style>
+	:root {
+		--background-color: white;
+		--text-color: black;
+		--error-color: #c00;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--background-color: rgb(51, 51, 51);
+			--text-color: white;
+			--error-color: #f88;
+		}
+	}
+
     body {
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 6vw;
+      background-color: var(--background-color);
+      color: var(--text-color);
     }
 
     @supports (display:grid) {
@@ -38,8 +54,6 @@
       /* min-width: 300px; */
       max-width: 900px;
       /* margin-left: var(--left-start); */
-      background-color: var(--background-color);
-      color: var(--text-color);
     }
 
     h1 {
@@ -74,6 +88,10 @@
 
     .compact {
       margin-top: 2vh;
+    }
+
+    input[type="button"], button {
+	    color: black !important;
     }
   </style>
 </head>
