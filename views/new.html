@@ -13,29 +13,31 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="https://eluni.co/analytics.js">
   </script>
-<link rel="stylesheet" href="/common.css">
+  <link rel="stylesheet" href="/common.css">
   <style>
-
-    @media (max-width: 550px) {
-      body {
-        --body-width: 75%;
-        --left-start: 12.5%;
-      }
-    }
-
-    @media (max-width: 400px) {
-      body {
-        --body-width: 100%;
-        --left-start: 1%;
-        margin-right: 1%;
-      }
-    }
-
     body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 6vw;
+    }
+
+    @supports (display:grid) {
+      body {
+        display: grid;
+        padding: 20px;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        margin: 0;
+      }
+    }
+
+    #main {
       font-family: "Helvetica Neue", "Helvetica", "Arial", "Roboto" !important;
-      width: var(--body-width);
-      min-width: 300px;
-      margin-left: var(--left-start);
+      /* width: var(--body-width); */
+      /* min-width: 300px; */
+      max-width: 900px;
+      /* margin-left: var(--left-start); */
       background-color: var(--background-color);
       color: var(--text-color);
     }
@@ -73,46 +75,46 @@
     .compact {
       margin-top: 2vh;
     }
-
-
-
   </style>
 </head>
 
 <body>
-  <h1>Tom's URL Shortener</h1>
-
-  <p>Create a short URL:</p>
-  <label for="url">Enter URL: </label>
-  <input type="text" name="url" id="url">
-  <div class="error-div" id="error-div">The URL you entered is invalid.</div>
-  <input id="submit-btn" type="button" value="Shorten">
-  <p>
-  <div id="result"></div>
-  </p>
-
-  <p class="footer">
-    URLs that come from <code>url.eluni.co</code> take the form of <code>url.eluni.co/v/XXXXXX</code> where the Xs
-    represent
-    the unique ID of that shortened URL. You can visit <code>url.eluni.co/<b>q</b>/XXXXXX</code> to see where the URL
-    will
-    lead without actually visiting it (notice the change from v to q)
-  </p>
-  <p class="footer compact">
-    You can also paste the URL right here to check
-    <input type="text" id="check-url">
-    <button id="check-button">Check Destination</button>
-  </p>
-  <p class="footer">
-	By using this URL shortener you agree to the terms: 
-	<ul>
-		<li >You may not use the URL shortener to shorten obscene, profane, or mature URLs</li>
-		<li >You may not use the URL shortener to shorten misleading, fraudulent, or otherwise malicious websites</li>
-		<li >The operator of the shortener reserves the right to disable or remove any shortened URLs for any or no reason at any time without warning</li>
-		<li >The opeartor of the shortener reserves the right to change this terms at any time without notice
-		</li>
-	</ul>
-  </p>
+  <div id="main">
+    <h1>Tom's URL Shortener</h1>
+    <p>Create a short URL:</p>
+    <label for="url">Enter URL: </label>
+    <input type="text" name="url" id="url">
+    <div class="error-div" id="error-div">The URL you entered is invalid.</div>
+    <input id="submit-btn" type="button" value="Shorten">
+    <p>
+    <div id="result"></div>
+    </p>
+    <p class="footer">
+      URLs that come from <code>url.eluni.co</code> take the form of <code>url.eluni.co/v/XXXXXX</code> where the Xs
+      represent
+      the unique ID of that shortened URL. You can visit <code>url.eluni.co/<b>q</b>/XXXXXX</code> to see where the URL
+      will
+      lead without actually visiting it (notice the change from v to q)
+    </p>
+    <p class="footer compact">
+      You can also paste the URL right here to check
+      <input type="text" id="check-url">
+      <button id="check-button">Check Destination</button>
+    </p>
+    <div class="footer">
+      By using this URL shortener you agree to the terms:
+      <ul>
+        <li>You may not use the URL shortener to shorten obscene, profane, or mature URLs</li>
+        <li>You may not use the URL shortener to shorten misleading, fraudulent, or otherwise malicious websites</li>
+        <li>The operator of the shortener reserves the right to disable or remove any shortened URLs for any or no
+          reason
+          at
+          any time without warning</li>
+        <li>The opeartor of the shortener reserves the right to change this terms at any time without notice
+        </li>
+      </ul>
+    </div>
+  </div>
   <script>
     let button = document.querySelector('#submit-btn');
     let field = document.querySelector('#url');
