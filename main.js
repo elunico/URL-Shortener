@@ -110,48 +110,14 @@ app.post('/create', createLimitStore.rateLimiter, async (req, res) => {
   try {
     let answer = await sqlSaveRecord(url, id);
     console.log(answer);
-    res.status(201).send({ success: true, path: answer.path });
+    let responseJSON = { success: true, path: answer.path };
+    if (url.length <= ('https://url.eluni.co/v/'.length + answer.path.length)) {
+      responseJSON.ironic = true;
+    }
+    res.status(201).send(responseJSON);
   } catch (error) {
     res.status(500).send({ success: false, err: error.err });
   }
-});
-
-app.get('/now', async (req, res) => {
-  let now = new Date(Date.now());
-  let date = now.getDate();
-
-  let name = '';
-  if (date == 1)
-    name = 'kalendae';
-  else if (date > 1 && date <= 7)
-    name = `${(date - 1)} diēs post kalendās`;
-  else if (date > 7 && date <= 14)
-    name = `${(date - 1)} diēs ante īdūs`;
-  else if (date == 15)
-    name = `īdū`;
-  else if (date > 15)
-    name = `${(date - 1)} diēs post īdūs`;
-
-  let day = 'diēs ';
-  day += [
-    'Sōlis', 'Lūnae', 'Mārtis', 'Mercuriī', 'Iovis', 'Veneris', 'Saturnī'
-  ][now.getDay()];
-
-  let daytime = `${day}, ${name}`;
-
-  let month = 'mēnsis ';
-
-  month += [
-    'Iānuārius', 'Februārius', 'Martius', 'Aprīlis', 'Māius', 'Iūnius', 'Iūlius', 'Augustus', 'September', 'Octōber', 'November', 'December'
-  ][now.getMonth()];
-
-  let year = now.getFullYear() - -753;
-
-  let yeartime = `${year} a.U.C`;
-
-  let result = `${daytime}, ${month} ${yeartime}\n`;
-
-  res.send(result);
 });
 
 async function getURL(path) {
