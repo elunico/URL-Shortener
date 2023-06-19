@@ -2,9 +2,10 @@ const limiter = require('express-rate-limit');
 const sql = require('sqlite3');
 
 class RateLimitStore {
-  constructor(windowMS, max) {
+  constructor(windowMS, max, table) {
     this.windowMS = windowMS;
     this.max = max;
+    this.table = table;
 
     this.rateLimitStore = new sql.Database(`/home/thomas/url-shortener/url-database.sqlite3`, err => {
       if (err) {
@@ -24,25 +25,25 @@ class RateLimitStore {
       windowMs: this.windowMS,
       store: this,
       keyGenerator: keyGenerator,
-      handler: (req, res, next) => {
-        if (Date.now() >= req.rateLimit.resetTime.getTime()) {
-          this.resetKey(keyGenerator(req));
-          next();
-        } else {
-          res.status(429).send(msg);
-        }
-      }
+      // handler: (req, res, next) => {
+      //   if (Date.now() >= req.rateLimit.resetTime.getTime()) {
+      //     this.resetKey(keyGenerator(req));
+      //     next();
+      //   } else {
+      //     res.status(429).send(msg);
+      //   }
+      // }
     });
   }
 
   incr(key, cb) {
-    this.rateLimitStore.get('SELECT * from agent where id=?', [key], (err, row) => {
+    this.rateLimitStore.get(`SELECT * from ${this.table} where id=?`, [key], (err, row) => {
       if (err) {
         console.error(`Error incrementing ${key}`);
         console.error(err);
         cb(err, -1, new Date());
       } else if (row) {
-        this.rateLimitStore.run(`UPDATE agent
+        this.rateLimitStore.run(`UPDATE ${this.table}
         SET count=?
         WHERE
             id=?`, [row.count + 1, key], err => {
@@ -51,7 +52,7 @@ class RateLimitStore {
         });
       } else {
         let d = new Date(Date.now() + 1000 * 60 * 5);
-        this.rateLimitStore.run(`INSERT INTO agent (id, count, expires) VALUES (?, ?, ?)`, [key, 1, d], (err) => {
+        this.rateLimitStore.run(`INSERT INTO ${this.table} (id, count, expires) VALUES (?, ?, ?)`, [key, 1, d], (err) => {
           console.error(err);
           cb(err, 1, d);
 
@@ -61,7 +62,7 @@ class RateLimitStore {
   }
 
   decr(key) {
-    this.rateLimitStore.run(`UPDATE table
+    this.rateLimitStore.run(`UPDATE ${this.table}
         SET count=?
         WHERE
             key=?`, [row.count - 1, key], err => {
@@ -70,7 +71,7 @@ class RateLimitStore {
   }
 
   resetKey(key) {
-    this.rateLimitStore.run(`DELETE FROM agent WHERE id=?`, [key], err => {
+    this.rateLimitStore.run(`DELETE FROM ${this.table} WHERE id=?`, [key], err => {
       console.error(err);
     });
   }

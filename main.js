@@ -5,8 +5,8 @@ const RateLimitStore = require('./RateLimitStore');
 // const fs = require('fs');
 const dotenv = require('dotenv').config();
 
-const createLimitStore = new RateLimitStore(1000 * 60 * 60, 50);
-const redirectLimitStore = new RateLimitStore(1000 * 60, 1000);
+const createLimitStore = new RateLimitStore(1000 * 60 * 60, 50, 'cragent');
+const redirectLimitStore = new RateLimitStore(1000 * 60, 1000, 'rdagent');
 const app = express();
 const sqlite = require('sqlite3');
 console.log(__dirname + '/.env');
@@ -59,29 +59,33 @@ function invalid(url) {
   }
 }
 
-function sqlSaveRecord(req, res, url, id, retryCount = 0) {
+function sqlSaveRecord(url, id, retryCount = 100) {
   return new Promise((resolve, reject) => {
-
+    if (retryCount <= 0) return reject({ success: false, err: "Failed to find unique identifier: too many attempts" });
     sqlStore.get('SELECT * from urls where url=?', [url], (err, row) => {
       if (err) {
         console.error(err.message);
-        reject();
-      }
-      if (!row) {
-        sqlStore.run('INSERT into urls (url, path, createdAt) values (?, ?, ?)', [url, id, Date.now().toLocaleString([], { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })], (err) => {
+        reject({ success: false, err: "Database malfunction" });
+      } else if (!row) {
+        sqlStore.get('SELECT * FROM urls WHERE path=?', [id], (err, rows) => {
           if (err) {
-            res.status(500).send({ success: false, err });
-            console.error(err);
-            reject();
+            reject({ success: false, err: "Database malfunction" });
+          } else if (rows) {
+            sqlSaveRecord(url, generateID(), retryCount - 1).then(resolve).catch(reject);
           } else {
-            console.log(`Inserted ${url} with path ${id}`);
-            res.send({ success: true, path: id });
-            resolve();
+            sqlStore.run('INSERT into urls (url, path, createdAt) values (?, ?, ?)', [url, id, Date.now()], (err) => {
+              if (err) {
+                console.error(err);
+                reject({ success: false, err: "Database malfunction" });
+              } else {
+                console.log(`Inserted ${url} with path ${id}`);
+                resolve({ success: true, path: id });
+              }
+            });
           }
         });
       } else {
-        res.send({ success: true, path: row.path });
-        resolve();
+        resolve({ success: true, path: row.path });
       }
 
     });
@@ -103,7 +107,13 @@ app.post('/create', createLimitStore.rateLimiter, async (req, res) => {
     return;
   }
   let id = generateID();
-  await sqlSaveRecord(req, res, url, id);
+  try {
+    let answer = await sqlSaveRecord(url, id);
+    console.log(answer);
+    res.status(201).send({ success: true, path: answer.path });
+  } catch (error) {
+    res.status(500).send({ success: false, err: error.err });
+  }
 });
 
 app.get('/now', async (req, res) => {
