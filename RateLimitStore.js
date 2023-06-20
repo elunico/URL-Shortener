@@ -13,26 +13,15 @@ class RateLimitStore {
       }
     });
 
-    function keyGenerator(req) {
-      // default behavior for express-rate-limit
-      return req.ip;
-    }
-
     let msg = { success: false, reason: 'Too many requests!' };
     this.rateLimiter = limiter({
       message: msg,
       max: this.max,
       windowMs: this.windowMS,
       store: this,
-      keyGenerator: keyGenerator,
-      // handler: (req, res, next) => {
-      //   if (Date.now() >= req.rateLimit.resetTime.getTime()) {
-      //     this.resetKey(keyGenerator(req));
-      //     next();
-      //   } else {
-      //     res.status(429).send(msg);
-      //   }
-      // }
+      keyGenerator: (request) => {
+        return request.header('x-forwarded-for')
+      },
     });
   }
 
@@ -52,7 +41,7 @@ class RateLimitStore {
         });
       } else {
         let d = new Date(Date.now() + 1000 * 60 * 5);
-        this.rateLimitStore.run(`INSERT INTO ${this.table} (id, count, expires) VALUES (?, ?, ?)`, [key, 1, d], (err) => {
+        this.rateLimitStore.run(`INSERT INTO ${this.table} (id, count, expires) VALUES (?, ?, ?)`, [key, 1, d.getTime()], (err) => {
           console.error(err);
           cb(err, 1, d);
 
@@ -68,12 +57,14 @@ class RateLimitStore {
             key=?`, [row.count - 1, key], err => {
       console.error(err);
     });
+    console.log("Decrementing " + key);
   }
 
   resetKey(key) {
     this.rateLimitStore.run(`DELETE FROM ${this.table} WHERE id=?`, [key], err => {
       console.error(err);
     });
+    console.log("Resetting " + key);
   }
 }
 

@@ -1,16 +1,13 @@
 const express = require('express');
 const path = require('path');
 const RateLimitStore = require('./RateLimitStore');
-// const child = require('child_process');
-// const fs = require('fs');
-const dotenv = require('dotenv').config();
+const sqlite = require('sqlite3');
 
 const createLimitStore = new RateLimitStore(1000 * 60 * 60, 50, 'cragent');
 const redirectLimitStore = new RateLimitStore(1000 * 60, 1000, 'rdagent');
 const app = express();
-const sqlite = require('sqlite3');
-console.log(__dirname + '/.env');
-console.log(dotenv);
+
+
 const sqlStore = new sqlite.Database('/home/thomas/url-shortener/url-database.sqlite3', err => {
   if (err) {
     console.error("Could not open database!");
@@ -182,9 +179,9 @@ app.get('/', redirectLimitStore.rateLimiter, (req, res) => {
 });
 
 app.listen(Number(process.env.PORT || 4000), () => {
-  console.log("URL Shortener Listening...");
-  console.log("Trying to drop GID");
-  console.log(`port listening is ${process.env.PORT}, ${Number(process.env.PORT || 4000)}`);
-  //  process.setgid(20);
-  console.log(`GID=${process.getgid()}`);
+  console.log(`URL Shortener Listening on ${Number(process.env.PORT || 4000)}...`);
+  console.log(`URL Shortener is gid=${process.getgid()} and uid=${process.getuid()}... trying to drop gid`);
+  process.setgid(1000);
+  process.setuid(1000);
+  console.log(`URL Shortener is now gid=${process.getgid()} and uid=${process.getuid()}`);
 });
